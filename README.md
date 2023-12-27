@@ -1,1 +1,2 @@
-# msc_aml_project_reinforcement_learning
+# Applied Machine Learning - Semester Project
+Group projetc for the 6 ECTS masters degree lecture.
