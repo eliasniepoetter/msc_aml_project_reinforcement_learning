@@ -4,6 +4,6 @@ The goal is to design a flight controller through reinforcement leanring methods
 Pytorch is used as the main package for the reinforcement learning implementation.
 
 ## Topic Allocation
-- Lukas Schratt:      
+- Lucas Schratt:      
 - Johannes Kaufmann:  
 - Elias Niepötter:    
