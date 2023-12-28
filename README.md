@@ -7,3 +7,7 @@ Pytorch is used as the main package for the reinforcement learning implementatio
 - Lucas Schratt:      
 - Johannes Kaufmann:  
 - Elias Niepötter:    
+
+### External Programs
+For fligth dynamics: jsbsim: https://github.com/JSBSim-Team/jsbsim/tree/master
+For visualization: FligthGear 2020.3.19: https://www.flightgear.org/
