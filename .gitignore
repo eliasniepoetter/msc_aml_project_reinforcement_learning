@@ -45,3 +45,7 @@ Thumbs.db
 *.aux
 *.fls
 *.fdb_latexmk
+
+# Git #
+###################
+venv
