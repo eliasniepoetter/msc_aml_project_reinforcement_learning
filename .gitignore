@@ -46,6 +46,8 @@ Thumbs.db
 *.fls
 *.fdb_latexmk
 
-# Git #
+# Python #
 ###################
 venv
+__pycache__
+.pyc
