@@ -1,5 +1,5 @@
-import gym
-from gym import spaces
+import gymnasium as gym
+from gymnasium import spaces
 
 class FlightEnv(gym.Env):
     def __init__(self):
