@@ -15,7 +15,7 @@ class Dynamics:
 
 
     def greet(self):
-        print("Hello, I am agent " + str(self.id) + ".")
+        print("Hello, I the agent " + str(self.id) + ".")
 
 
     def dynamics(self,state,input):
