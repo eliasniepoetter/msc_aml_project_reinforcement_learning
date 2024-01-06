@@ -1,7 +1,8 @@
 from gymnasium import Env
 from gymnasium.spaces import Dict, Box
 import numpy as np
-from dynamics import Dynamics
+from dynamics.flight_dynamics import Dynamics
+from stable_baselines3.common.env_checker import check_env
 
 class FlightEnv(Env):
 
@@ -18,21 +19,18 @@ class FlightEnv(Env):
                                   'throttle':Box(low=0, high=1, shape=(1, 1), dtype=np.float32)})
         
         # initial condition and state
-        self.reset()
+        self.initial_state = np.array([0, 0, 100, 0]) # ToDo: define initial state
+        self.dynamics = Dynamics(id='1',state=self.initial_state)
+        self.current_step = 0
+        self.reward = 0
 
     def reset(self):
         # ToDo: set dynamics to initial state
         self.current_step = 0
         self.reward = 0
-        initial_state = None # ToDo: define initial state
-        
-        # check if reset is called for the first time
-        if not self.dynamics in locals():
-            self.dynamics = Dynamics()
-
         # set state of dynamics to initial state and convert to observation
-        self.dynamics.state = initial_state
-        observation = self._state_to_observation(initial_state)
+        self.dynamics.state = self.initial_state
+        observation = self._state_to_observation(self.initial_state)
 
         return observation
     
@@ -51,6 +49,8 @@ class FlightEnv(Env):
         # ToDo: implement done condition
         done = False
         
+        # ToDo: implement info
+        info = 'info'
         return observation, reward, terminated, done, info
 
     def render(self):
@@ -58,8 +58,10 @@ class FlightEnv(Env):
         pass
 
     def close(self):
+        print('close')
         pass
 
     def _state_to_observation(self, state):
         # ToDo: implement conversion from state to observation based on observation space and state definition
         pass
+   
