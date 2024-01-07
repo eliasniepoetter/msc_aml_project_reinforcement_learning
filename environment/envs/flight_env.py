@@ -1,7 +1,7 @@
 from gymnasium import Env
 from gymnasium.spaces import Dict, Box
 import numpy as np
-from dynamics.flight_dynamics import Dynamics
+from dynamics.flight_dynamics import FlightDynamics
 from stable_baselines3.common.env_checker import check_env
 
 class FlightEnv(Env):
@@ -9,19 +9,21 @@ class FlightEnv(Env):
     def __init__(self):
         # Todo: define boundaries for action and observation space
         # defintion of spaces
-        self.observation_space = Dict({'velocity':Box(low=0, high=1, shape=(1, 1), dtype=np.float32),
-                                       'alpha':Box(low=-1, high=1, shape=(1, 1), dtype=np.float32),
-                                       'pos_z':Box(low=0, high=1, shape=(1, 1), dtype=np.float32),
-                                       'pos_x':Box(low=0, high=1, shape=(1, 1), dtype=np.float32),
+        self.observation_space = Dict({'alpha':Box(low=-1, high=1, shape=(1, 1), dtype=np.float32),
                                        'q':Box(low=-1, high=1, shape=(1, 1), dtype=np.float32),
-                                       'Theta':Box(low=-1, high=1, shape=(1, 1), dtype=np.float32)})
+                                       'velocity':Box(low=0, high=1, shape=(1, 1), dtype=np.float32),
+                                       'Theta':Box(low=-1, high=1, shape=(1, 1), dtype=np.float32),
+                                       'pos_z':Box(low=0, high=1, shape=(1, 1), dtype=np.float32),
+                                       'pos_x':Box(low=0, high=1, shape=(1, 1), dtype=np.float32)})
+        
         self.action_space = Dict({'elevator':Box(low=-1, high=1, shape=(1, 1), dtype=np.float32),
                                   'throttle':Box(low=0, high=1, shape=(1, 1), dtype=np.float32)})
         
         # initial condition and state
-        self.initial_state = np.array([0, 0, 100, 0]) # ToDo: define initial state
-        self.dynamics = Dynamics(id='1',state=self.initial_state)
+        self.initial_state = np.array([0, 0, 100, 0, 0, 0]).T # ToDo: define initial state
+        self.dynamics = FlightDynamics(initial_state=self.initial_state)
         self.current_step = 0
+        self.dt = 0.1 # ToDo: define timestep
         self.reward = 0
 
     def reset(self):
@@ -36,22 +38,20 @@ class FlightEnv(Env):
     
     def step(self, action):
         # ToDo: convert action to input for dynamics and observation from output of dynamics
-        state = Dynamics.updateStates(action,printState=False)
+        state = self.dynamics.calculate_timestep(input=action, dt=self.dt)
         observation = self._state_to_observation(state)
         
         # ToDo: implement reward function
         reward = self.reward
         self.current_step += 1
         
-        # ToDo: implement termination condition
-        terminated = False
-        
         # ToDo: implement done condition
-        done = False
+        done = self.current_step >= self.max_steps
         
         # ToDo: implement info
-        info = 'info'
-        return observation, reward, terminated, done, info
+        info = {}
+        
+        return observation, reward, done, info
 
     def render(self):
         # ToDo: implement flight visualization with flightgear
@@ -62,6 +62,11 @@ class FlightEnv(Env):
         pass
 
     def _state_to_observation(self, state):
-        # ToDo: implement conversion from state to observation based on observation space and state definition
-        pass
+        observation = {'alpha':state[0],
+                       'q':state[1],
+                       'velocity':state[2],
+                       'Theta':state[3],
+                       'pos_x':state[4],
+                       'pos_z':state[5]}
+        return observation
    
