@@ -14,8 +14,8 @@ class FlightEnv(Env):
                                        'q':Box(low=-1, high=1, shape=(1, 1), dtype=np.float32),
                                        'velocity':Box(low=0, high=1, shape=(1, 1), dtype=np.float32),
                                        'Theta':Box(low=-1, high=1, shape=(1, 1), dtype=np.float32),
-                                       'pos_z':Box(low=0, high=1, shape=(1, 1), dtype=np.float32),
-                                       'pos_x':Box(low=0, high=1, shape=(1, 1), dtype=np.float32)})
+                                       'pos_x':Box(low=0, high=1, shape=(1, 1), dtype=np.float32),
+                                       'pos_z':Box(low=0, high=1, shape=(1, 1), dtype=np.float32)})
         
         self.action_space = Dict({'elevator':Box(low=-1, high=1, shape=(1, 1), dtype=np.float32),
                                   'throttle':Box(low=0, high=1, shape=(1, 1), dtype=np.float32)})

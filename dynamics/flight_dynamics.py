@@ -61,7 +61,7 @@ class FlightDynamics():
         @param initial_state: np.ndarray of shape (6,1) representing the initial state [alpha [rad], q [rad/s], V [m/s], Theta [rad], x [m], z [m]].T of the system
         '''
         self.state = initial_state
-        if initial_state.shape != (6,):
+        if initial_state.shape != (6,1):
             raise ValueError('Initial state must be of shape (6,1): state = [alpha [rad], q [rad/s], V [m/s], Theta [rad], x [m], z [m]].T, but is of shape ' + str(initial_state.shape))
 
     def calculate_timestep(self, input: np.ndarray, dt: float) -> np.ndarray:
