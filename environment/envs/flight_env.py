@@ -1,7 +1,7 @@
 from gymnasium import Env
 from gymnasium.spaces import Dict, Box
 import numpy as np
-from dynamics.flight_dynamics import FlightDynamics
+from dynamics.flightdynamics import FlightDynamics
 from stable_baselines3.common.env_checker import check_env
 
 class FlightEnv(Env):

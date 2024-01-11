@@ -1,8 +1,7 @@
-from testing import test_visualization
+# from testing import test_visualization
+from testing import test_dynamics
 
-# run unit tests for test_agent
-#test_dynamics
-#test_env
+test_dynamics
 
-if __name__ == "__main__":
-    test_visualization.test_visualization()
+# if __name__ == "__main__":
+    # test_visualization.test_visualization()
