@@ -62,8 +62,6 @@ class Flightdynamics:
         if state.shape != (6,1):
             raise ValueError('Initial state must be of shape (6,1): state = [alpha [rad], q [rad/s], V [m/s], Theta [rad], x [m], z [m]].T, but is of shape ' + str(state.shape))
 
-
-
     def integrate(self,u,dt):
         '''
         Returns the new state after integration
@@ -74,8 +72,6 @@ class Flightdynamics:
         newState = self.state + dt * xdot
         return newState
 
-
-
     def timestep(self, input: np.ndarray, dt: float) -> np.ndarray:
         '''
         Takes in an input and a timestep and returns the new state of the system
@@ -83,5 +79,11 @@ class Flightdynamics:
         @param dt: float representing the timestep
         @return: np.ndarray of shape (6,1) representing the new state [alpha [rad], q [rad/s], V [m/s], Theta [rad], x [m], z [m]].T of the system
         '''
+        # get new state without x,z position
         self.state = self.integrate(input,dt)
+        # calculate x,z position
+        V0 = 51.4 # ToDo: handle V0
+        gamma = self.state[3] - self.state[0]
+        self.state[4] = self.state[4] + (self.state[2]+V0) * np.cos(gamma) * dt
+        self.state[5] = self.state[5] + (self.state[2]+V0) * np.sin(gamma) * dt
         return self.state

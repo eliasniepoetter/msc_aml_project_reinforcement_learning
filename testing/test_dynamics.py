@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 id = 0
-initial_state = np.array([[0.],[0.],[0.],[0.],[0.],[0.]])
+initial_state = np.array([[0.],[0.],[0.],[0.],[0.],[500.]])
 testDynamics = Flightdynamics(id, initial_state)
 
 V0 = 51.4
@@ -45,6 +45,7 @@ axs[2, 0].set_title('x')
 
 axs[2, 1].plot(time, z)
 axs[2, 1].set_title('z')
+#axs[2, 1].set_ylim([0, 2*initial_state[5][0]])
 
 for ax in axs.flat:
     ax.set(xlabel='time', ylabel='value')

@@ -8,7 +8,40 @@ import numpy as np
 # ToDO: implement visualizer
 class PlotVisualizer():
     def __init__(self):
-        pass
+        self.fig, self.axs = plt.subplots(3, 2)
+    
+    def render_state(self, state: np.ndarray):
+        '''
+        Renders the state in a plot
+        @param state: np.ndarray of shape (6,1) representing the state [alpha [rad], q [rad/s], V [m/s], Theta [rad], x [m], z [m]].T of the system
+        '''
+        # ToDo: convert state to time series, plot live, ...
+        self.axs[0, 0].plot(time, alpha)
+        self.axs[0, 0].set_title('Alpha')
+
+        self.axs[0, 1].plot(time, q)
+        self.axs[0, 1].set_title('q')
+
+        self.axs[1, 0].plot(time, V)
+        self.axs[1, 0].set_title('V')
+
+        self.axs[1, 1].plot(time, teta)
+        self.axs[1, 1].set_title('Teta')
+
+        self.axs[2, 0].plot(time, x)
+        self.axs[2, 0].set_title('x')
+
+        self.axs[2, 1].plot(time, z)
+        self.axs[2, 1].set_title('z')
+        #self.axs[2, 1].set_ylim([0, 2*initial_state[5][0]])
+
+        for ax in self.axs.flat:
+            ax.set(xlabel='time', ylabel='value')
+            ax.grid(True)
+
+        plt.suptitle('Results for open loop simulation of dynamics')
+        plt.tight_layout()
+        plt.show()
 
 class FlightGearVisualizer():
     def __init__(self):
