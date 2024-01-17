@@ -1,10 +1,11 @@
 from dynamics.flightdynamics import Flightdynamics
 import matplotlib.pyplot as plt
 import numpy as np
+from environment.visualization import PlotVisualizer
 
-id = 0
 initial_state = np.array([[0.],[0.],[0.],[0.],[0.],[500.]])
-testDynamics = Flightdynamics(id, initial_state)
+testDynamics = Flightdynamics(initial_state)
+vis = PlotVisualizer()
 
 V0 = 51.4
 dt = 0.01
@@ -16,8 +17,11 @@ time = np.linspace(t0, tf-dt, nsteps)
 results = []
 for i in time:
     input = np.array([[np.deg2rad(-10)],[0.]])
-    results.append(testDynamics.timestep(input, dt))
+    #results.append(testDynamics.timestep(input, dt))
+    vis.render_state(testDynamics.timestep(input, dt), input, i)
 
+
+'''
 # print results
 alpha = [result[0] for result in results]
 q = [result[1] for result in results]
@@ -54,3 +58,4 @@ for ax in axs.flat:
 plt.suptitle('Results for open loop simulation of dynamics')
 plt.tight_layout()
 plt.show()
+'''

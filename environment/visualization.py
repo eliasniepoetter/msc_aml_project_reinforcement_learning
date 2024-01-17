@@ -1,47 +1,99 @@
 import gymnasium as gym
 import subprocess
 import matplotlib.pyplot as plt
+#from matplotlib.animation import FuncAnimation
 from flightgear_python.fg_if import FDMConnection
 import time
 import numpy as np
 
-# ToDO: implement visualizer
+# ToDo: make this shit working
 class PlotVisualizer():
     def __init__(self):
-        self.fig, self.axs = plt.subplots(3, 2)
+        self._init_plot()
+        #self.ani = FuncAnimation(self.fig, self.render_state, blit=True)
+        self.fig.canvas.draw()
+        self.axbackground = [self.fig.canvas.copy_from_bbox(ax.bbox) for axs in self.axs for ax in axs]
+        plt.show(block=False)
+
+    def reset_plot(self):
+        self.t = []
+        #self.alpha = []
+        #self.q = []
+        #self.V = []
+        #self.Theta = []
+        #self.x = []
+        #self.z = []
+        #self.elevator = []
+        #self.throttle = []
+        self.plot_data = [[],[],[],[],[],[],[],[]]
     
-    def render_state(self, state: np.ndarray):
+    def _init_plot(self):
+        self.fig, self.axs = plt.subplots(4, 2)
+        self.reset_plot()
+        self.lines = []
+        for i in range(int(len(self.plot_data)/2)):
+            for j in range(2):
+                temp_lines, = self.axs[i, j].plot(self.t, self.plot_data[i*2+j])
+                self.lines.append(temp_lines)
+        ylabels = ['alpha', 'q', 'V', 'Theta', 'x-Pos.', 'z-Pos.', 'elevator', 'throttle']
+        for i, ax in enumerate(self.axs.flat):
+            ax.set(ylabel=ylabels[i])
+            ax.set_xlim(0, 100)
+            ax.grid(True)
+        self.axs[3, 0].set(xlabel='t')
+        self.axs[3, 1].set(xlabel='t')
+        plt.tight_layout()
+
+    def _plot(self):
+        #self.axs[0, 0].plot(self.t, self.alpha)
+        #self.axs[0, 1].plot(self.t, self.q)
+        #self.axs[1, 0].plot(self.t, self.V)
+        #self.axs[1, 1].plot(self.t, self.Theta)
+        #self.axs[2, 0].plot(self.t, self.x)
+        #self.axs[2, 1].plot(self.t, self.z)
+        #self.axs[3, 0].plot(self.t, self.elevator)
+        #self.axs[3, 1].plot(self.t, self.throttle)
+        for i in range(len(self.plot_data)):
+                self.lines[i].set_data(self.t, self.plot_data[i])
+        
+    def render_state(self, state: np.ndarray, action: np.ndarray, current_t: float):
         '''
         Renders the state in a plot
         @param state: np.ndarray of shape (6,1) representing the state [alpha [rad], q [rad/s], V [m/s], Theta [rad], x [m], z [m]].T of the system
+        @param action: np.ndarray of shape (2,1) representing the action [elevator [rad], throttle [0..1]].T of the system
+        @param dt: float representing the time step [s] of the system
         '''
-        # ToDo: convert state to time series, plot live, ...
-        self.axs[0, 0].plot(time, alpha)
-        self.axs[0, 0].set_title('Alpha')
+        self.t.append(current_t)
+        #self.alpha.append(state[0])
+        #self.q.append(state[1])
+        #self.V.append(state[2])
+        #self.Theta.append(state[3])
+        #self.x.append(state[4])
+        #self.z.append(state[5])
+        #self.elevator.append(action[0])
+        #self.throttle.append(action[1])
+        for i, st in enumerate(state):
+            self.plot_data[i].append(st)
+        for i, ac in enumerate(action):
+            self.plot_data[i+len(state)].append(ac)
+        self._plot()
 
-        self.axs[0, 1].plot(time, q)
-        self.axs[0, 1].set_title('q')
+        for background in self.axbackground:
+            self.fig.canvas.restore_region(background)
 
-        self.axs[1, 0].plot(time, V)
-        self.axs[1, 0].set_title('V')
+        for i in range(int(len(self.plot_data)/2)):
+            for j in range(2):
+                self.axs[i, j].draw_artist(self.lines[i*2+j])
+                self.fig.canvas.blit(self.axs[i, j].bbox)
 
-        self.axs[1, 1].plot(time, teta)
-        self.axs[1, 1].set_title('Teta')
+        
+        #self.fig.gca().relim()
+        #self.fig.gca().autoscale_view()
+        #self.fig.canvas.draw()
+        self.fig.canvas.flush_events()
 
-        self.axs[2, 0].plot(time, x)
-        self.axs[2, 0].set_title('x')
-
-        self.axs[2, 1].plot(time, z)
-        self.axs[2, 1].set_title('z')
-        #self.axs[2, 1].set_ylim([0, 2*initial_state[5][0]])
-
-        for ax in self.axs.flat:
-            ax.set(xlabel='time', ylabel='value')
-            ax.grid(True)
-
-        plt.suptitle('Results for open loop simulation of dynamics')
-        plt.tight_layout()
-        plt.show()
+    def close(self):
+        plt.close()
 
 class FlightGearVisualizer():
     def __init__(self):
