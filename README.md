@@ -16,6 +16,4 @@ Pytorch is used as the main package for the reinforcement learning implementatio
     - Dynamic Model
 
 ### Programs / Libraries
-- Reinforced Learning: PyTorch
-- Visualization: FligthGear 2020.3.19: https://www.flightgear.org/
-- Optional fligth dynamics: jsbsim: https://github.com/JSBSim-Team/jsbsim/tree/master 
+- Reinforced Learning: [Stable Baseline3](https://stable-baselines3.readthedocs.io/en/master/)

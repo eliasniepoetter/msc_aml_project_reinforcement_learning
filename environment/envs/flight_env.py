@@ -3,9 +3,10 @@ from gymnasium.spaces import Dict, Box
 import numpy as np
 from dynamics.flightdynamics import Flightdynamics
 from stable_baselines3.common.env_checker import check_env
-
+from collections import deque
+from environment.visualization import PlotVisualizer
 class FlightEnv(Env):
-    metadata = {'render_modes': ['human', 'flightgear'], 'render_fps': 30}
+    #metadata = {'render_modes': ['human'], 'render_fps': 30}
 
     def __init__(self, render_mode=None):
         # Todo: define boundaries for action and observation space, append observation space with target altitude
@@ -33,25 +34,29 @@ class FlightEnv(Env):
         self.dynamics = Flightdynamics(initial_state=self.initial_state)
         self.current_step = 0
         self.dt = 0.01 # ToDo: define timestep
+        self.obs_act_collection = deque()
         
         # try to hold altitude
         self.target_altitude = np.random.uniform(200, 400)        
         self.reward = 0
 
         # rendering
-        assert render_mode is None or render_mode in self.metadata["render_modes"]
-        self.render_mode = render_mode
+        #assert render_mode is None or render_mode in self.metadata["render_modes"]
+        #self.render_mode = render_mode
+        self.vis = PlotVisualizer()
 
     def reset(self, seed=None, options=None):
         super().reset(seed=seed, options=options)
         self.current_step = 0
         self.reward = 0
+        self.vis.reset_plot()
 
         # Todo
         self.target_altitude = np.random.uniform(200, 400) 
         # set state of dynamics to initial state and with new random altitude convert to observation
         self.initial_state[-1] = np.random.uniform(200, 400) 
         self.dynamics.state = self.initial_state
+        self.obs_act_collection.clear()
 
         observation = self.initial_state
 
@@ -61,7 +66,9 @@ class FlightEnv(Env):
     
     def step(self, action):
         observation = self.dynamics.timestep(input=action, dt=self.dt)
-        
+        # save observation and action in collection
+        self.obs_act_collection.append(np.concatenate((observation, action)))
+
         # ToDo: implement reward function
         self.current_step += 1
         self.reward += 1     # get reward for surviving
@@ -70,7 +77,12 @@ class FlightEnv(Env):
             self.reward += 100   # get reward for being close to target altitude
         
         # ToDo: implement done condition
-        done = False
+        if self.current_step >= 1000:
+            done = True
+        elif observation[-1] <= 0:
+            done = True
+        else:
+            done = False
         truncated = False
 
         # ToDo: implement info, can be empty
@@ -79,13 +91,12 @@ class FlightEnv(Env):
         return observation, self.reward, done, truncated, info
 
     def render(self):
-        # ToDo: implement flight visualization with flightgear
-        if self.render_mode == 'human':
-            pass
+        #if self.render_mode == 'human':
+            #pass
+        self.vis.render_state(self.obs_act_collection, self.dt)
 
     def close(self):
-        print('close')
-        pass
+        self.vis.close()
     
     def reward_function(self, state):
         raise NotImplementedError
