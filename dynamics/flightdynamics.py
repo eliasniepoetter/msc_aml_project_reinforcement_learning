@@ -3,12 +3,12 @@ import numpy as np
 class Flightdynamics:
 
     # states:
-        # alpha - angle of attack [rad] -> x[0]
-        # q     - pitch rate [rad/s]    -> x[1]
-        # V     - velocity [m/s]        -> x[2]
-        # theta - pitch angle [rad]     -> x[3]
-        # x     - x position [m]        -> x[4]
-        # z     - z position [m]        -> x[5]
+        # alpha  - angle of attack [rad]    -> x[0]
+        # q      - pitch rate [rad/s]       -> x[1]
+        # V      - velocity [m/s]           -> x[2]
+        # theta  - pitch angle [rad]        -> x[3]
+        # x      - x position [m]           -> x[4]
+        # z      - z position [m]           -> x[5]
     
     # inputs:
         # elevator - elevator angle [rad] -> u[0]
@@ -85,4 +85,5 @@ class Flightdynamics:
         gamma = self.state[3] - self.state[0]
         self.state[4] = self.state[4] + (self.state[2]+V0) * np.cos(gamma) * dt
         self.state[5] = self.state[5] + (self.state[2]+V0) * np.sin(gamma) * dt
+        # return new state
         return self.state

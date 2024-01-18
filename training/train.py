@@ -1,9 +1,9 @@
-from environment.envs.flight_env import FlightEnv
+from environment.envs.flight_env_target_altitude import FlightEnvTargetAltitude
 from stable_baselines3 import PPO
 
-env = FlightEnv()
+env = FlightEnvTargetAltitude()
 env.reset()
-model = PPO('MlpPolicy', env, verbose=1).learn(1000)
+model = PPO('MlpPolicy', env, verbose=100).learn(100000)
 
 for i in range(1000):
     obs, info = env.reset()

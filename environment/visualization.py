@@ -8,8 +8,8 @@ from typing import Deque
 
 # ToDo: make this shit working
 class PlotVisualizer():
-    def __init__(self):
-        self._init_plot()
+    def __init__(self,target_altitude):
+        self._init_plot(target_altitude)
         self.fig.canvas.draw()
         plt.show(block=False)
 
@@ -17,11 +17,11 @@ class PlotVisualizer():
         self.t = np.zeros(1)
         self.plot_data = np.zeros((1,8))
     
-    def _init_plot(self):
+    def _init_plot(self, target_altitude):
         self.fig, self.axs = plt.subplots(4, 2)
         self.reset_plot()
         self.lines = []
-        self._plot()
+        self._plot(target_altitude)
         ylabels = ['alpha', 'q', 'V', 'Theta', 'x-Pos.', 'z-Pos.', 'elevator', 'throttle']
         for i, ax in enumerate(self.axs.flat):
             ax.set(ylabel=ylabels[i])
@@ -30,13 +30,23 @@ class PlotVisualizer():
         self.axs[3, 1].set(xlabel='t')
         plt.tight_layout()
 
-    def _plot(self):
+    def _plot(self,target_altitude):
         for i in range(4):
             for j in range(2):
+                self.axs[i, j].cla()
+                ylabels = ['alpha', 'q', 'V', 'Theta', 'x-Pos.', 'z-Pos.', 'elevator', 'throttle']
+                for k, ax in enumerate(self.axs.flat):
+                    ax.set(ylabel=ylabels[k])
+                    ax.grid(True)
+                self.axs[3, 0].set(xlabel='t')
+                self.axs[3, 1].set(xlabel='t')
+                plt.tight_layout()
                 self.axs[i, j].plot(self.t, self.plot_data[:,i*2+j])
+                if (i==2) & (j==1):
+                    self.axs[i, j].axhline(y=target_altitude, linestyle='--')
                 
         
-    def render_state(self, episode_data: Deque, dt: float):
+    def render_state(self, episode_data: Deque, dt: float, target_altitude: float):
         '''
         Renders the state in a plot
         @param episode_data: Deque of np.ndarrays of shape (8,) representing the state and actions [alpha [rad], q [rad/s], V [m/s], Theta [rad], x [m], z [m], elevator [rad], throttle [0..1]] of the system
@@ -44,7 +54,7 @@ class PlotVisualizer():
         '''
         self.t = [n*dt for n in range(len(episode_data))]
         self.plot_data = np.array(episode_data)
-        self._plot()
+        self._plot(target_altitude)
        
         #self.fig.gca().relim()
         #self.fig.gca().autoscale_view()
