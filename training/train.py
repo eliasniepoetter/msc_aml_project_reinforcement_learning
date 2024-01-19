@@ -1,11 +1,12 @@
 from environment.envs.flight_env_target_altitude import FlightEnvTargetAltitude
 from stable_baselines3 import PPO
+import time
 
 env = FlightEnvTargetAltitude()
 env.reset()
-model = PPO('MlpPolicy', env, verbose=100).learn(100000)
+model = PPO('MlpPolicy', env, verbose=100).learn(10000)
 
-for i in range(1000):
+for i in range(10):
     obs, info = env.reset()
     done = False
     while not done:
@@ -14,4 +15,4 @@ for i in range(1000):
         print(obs, rewards, done, info)
     env.render()
     print("Episode {} finished".format(i+1))
-    input("Press [enter] to continue.")
+    time.sleep(2)

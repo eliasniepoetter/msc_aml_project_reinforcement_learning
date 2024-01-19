@@ -96,12 +96,13 @@ class FlightEnv(Env,ABC):
         self._get_reward(observation)
         
         # ToDo: implement done condition
-        if self.current_step >= 5000:
+        if self.current_step >= 500:
             done = True
         elif observation[-1] <= 0:
             done = True
         else:
             done = False
+            
         truncated = False
 
         # ToDo: implement info, can be empty
