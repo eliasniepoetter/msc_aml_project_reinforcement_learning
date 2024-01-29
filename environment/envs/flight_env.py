@@ -38,34 +38,38 @@ class FlightEnv(Env,ABC):
         self.action_space = Box(low=np.array([-0.7, 0]), high=np.array([0.7, 1]), shape=(2,), dtype=np.float64)
         
         # Initial condition and state
-        self.initial_state = np.array([0, 0, 0, 0, 0, np.random.uniform(200, 400)]) # ToDo: define initial state
+        # self.initial_state = np.array([0, 0, 0, 0, 0, np.random.uniform(200, 400)]) 
+        self.initial_state, _  = self._get_initialstate()
         self.dynamics = Flightdynamics(initial_state=self.initial_state)
         self.current_step = 0
         self.dt = 0.01 # ToDo: define timestep
         self.obs_act_collection = deque()
         
         # try to hold altitude
-        self.target_altitude = np.random.uniform(200, 400)        
+        # self.target_altitude = np.random.uniform(200, 400)      
+        self.target_altitude = self._get_target()
         self.reward = 0
 
         # rendering
         #assert render_mode is None or render_mode in self.metadata["render_modes"]
         #self.render_mode = render_mode
-        self.vis = PlotVisualizer(self.target_altitude)
+        self.vis = PlotVisualizer(self.target_altitude) 
 
-    def reset(self, seed=None, options=None):
+        #counter for success
+        self.success_count = 0
+
+    def reset(self, seed=None, options=None): 
         super().reset(seed=seed, options=options)
         self.current_step = 0
-        self.reward = 0
+        _, self.reward = self._get_initialstate()
         self.vis.reset_plot()
 
         # Reset the environment and clear the state memory
         self.state_memory.clear()
 
-        # Todo
-        self.target_altitude = np.random.uniform(200, 400) 
+        self.target_altitude = self._get_target() 
         # set state of dynamics to initial state and with new random altitude convert to observation
-        self.initial_state[-1] = np.random.uniform(200, 400) 
+        self.initial_state, _ = self._get_initialstate()
         self.dynamics.state = self.initial_state
         self.obs_act_collection.clear()
 
@@ -91,18 +95,18 @@ class FlightEnv(Env,ABC):
         # newest obsevation is last vector in concatenated observation!
         observation = np.concatenate(self.state_memory, axis=-1)
 
-        # ToDo: implement reward function
         self.current_step += 1
         self._get_reward(observation)
         
-        # ToDo: implement done condition
-        if self.current_step >= 500:
-            done = True
-        elif observation[-1] <= 0:
-            done = True
-        else:
-            done = False
-            
+        done = self._EpisodeStopCondition(observation=observation)
+        
+        #test purposes
+        if done == True:
+            print(self.current_step)
+            print(self.reward)
+            # print(observation)
+            # print(self.target_altitude)
+
         truncated = False
 
         # ToDo: implement info, can be empty
@@ -120,4 +124,18 @@ class FlightEnv(Env,ABC):
     
     @abstractmethod
     def _get_reward(self, observation):
+        raise NotImplementedError
+    
+    @abstractmethod
+    # returns initial state of aircraft
+    def _get_initialstate(self, a_state=None):
+        raise NotImplementedError
+    
+    @abstractmethod
+    #returns desired target used for reward function 
+    def _get_target(self, atarget=None):
+        raise NotImplementedError
+    
+    @abstractmethod
+    def _EpisodeStopCondition(self, observation):
         raise NotImplementedError
