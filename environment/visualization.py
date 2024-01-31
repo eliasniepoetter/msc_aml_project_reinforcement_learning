@@ -68,6 +68,8 @@ class PlotVisualizer():
                 if (i==2) & (j==1):
                     self.axs[i, j].axhline(y=self.target_altitude, linestyle='--')
         plt.show()
+
+        plt.plot(self.plot_data[:,4],self.plot_data[:,5])
         
        
         #self.fig.gca().relim()

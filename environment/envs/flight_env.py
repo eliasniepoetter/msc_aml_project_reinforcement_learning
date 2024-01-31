@@ -23,8 +23,8 @@ class FlightEnv(Env,ABC):
         '''
         # observation space [alpha, q, velocity, Theta, pos_x, pos_z]
         self.memory_size = 10
-        state_lower_bound = np.array([-0.2, -2, -100, -1.2, 0, 0])
-        state_upper_bound = np.array([0.2, 2, 100, 1.2, np.inf, np.inf])
+        state_lower_bound = np.array([-0.2, -0.2, -30, -1.0, 0, 0])
+        state_upper_bound = np.array([0.2, 0.2, 30, 1.0, np.inf, np.inf])
         self.observation_space = Box(low=np.repeat(state_lower_bound, self.memory_size), high=np.repeat(state_upper_bound, self.memory_size), shape=(6*self.memory_size,), dtype=np.float64)
         
         # Initialize the deque to store state history
@@ -35,7 +35,7 @@ class FlightEnv(Env,ABC):
                                   'throttle':Box(low=0, high=1, shape=(1,), dtype=np.float64)})
         '''
         # action space [elevator, throttle]
-        self.action_space = Box(low=np.array([-0.7, 0]), high=np.array([0.7, 1]), shape=(2,), dtype=np.float64)
+        self.action_space = Box(low=np.array([-0.1, 0]), high=np.array([0.1, 0.4]), shape=(2,), dtype=np.float64)
         
         # Initial condition and state
         # self.initial_state = np.array([0, 0, 0, 0, 0, np.random.uniform(200, 400)]) 
@@ -86,7 +86,6 @@ class FlightEnv(Env,ABC):
         # observation = self.dynamics.timestep(input=action, dt=self.dt)
 
         # action rate limiter
-        
         self.rateLimitElevator = 0.1 # rad/s
         self.rateLimitThrottle = 0.1 # 1/s
         if self.current_step > 0:
@@ -106,7 +105,7 @@ class FlightEnv(Env,ABC):
         self.state_memory.append(obs)
 
         # Concatenate the state memory to form the agent's current state
-        # newest obsevation is last vector in concatenated observation!
+        # newest observation is last vector in concatenated observation!
         observation = np.concatenate(self.state_memory, axis=-1)
 
         self.current_step += 1
@@ -115,9 +114,9 @@ class FlightEnv(Env,ABC):
         done = self._EpisodeStopCondition(observation=observation)
         
         #test purposes
-        if done == True:
-            print(self.current_step)
-            print(self.reward)
+        # if done == True:
+            # print(self.current_step)
+            # print(self.reward)
             # print(observation)
             # print(self.target_altitude)
 
