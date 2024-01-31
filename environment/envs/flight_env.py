@@ -42,7 +42,7 @@ class FlightEnv(Env,ABC):
         self.initial_state, _  = self._get_initialstate()
         self.dynamics = Flightdynamics(initial_state=self.initial_state)
         self.current_step = 0
-        self.dt = 0.01 # ToDo: define timestep
+        self.dt = 0.05 # ToDo: define timestep
         self.obs_act_collection = deque()
         
         # try to hold altitude
@@ -84,6 +84,20 @@ class FlightEnv(Env,ABC):
     
     def step(self, action):
         # observation = self.dynamics.timestep(input=action, dt=self.dt)
+
+        # action rate limiter
+        
+        self.rateLimitElevator = 0.1 # rad/s
+        self.rateLimitThrottle = 0.1 # 1/s
+        if self.current_step > 0:
+            if abs(action[0] - self.obs_act_collection[-1][-2]) > self.rateLimitElevator*self.dt:
+                sign = np.sign(action[0] - self.obs_act_collection[-1][-2])
+                action[0] = self.obs_act_collection[-1][-2] + sign*self.rateLimitElevator*self.dt
+
+            if abs(action[1] - self.obs_act_collection[-1][-1]) > self.rateLimitThrottle*self.dt:
+                sign = np.sign(action[1] - self.obs_act_collection[-1][-1])
+                action[1] = self.obs_act_collection[-1][-1] + sign*self.rateLimitThrottle*self.dt
+
         obs = self.dynamics.timestep(input=action, dt=self.dt)
         # save observation and action in collection
         self.obs_act_collection.append(np.concatenate((obs, action)))
@@ -96,7 +110,7 @@ class FlightEnv(Env,ABC):
         observation = np.concatenate(self.state_memory, axis=-1)
 
         self.current_step += 1
-        self._get_reward(observation)
+        self._get_reward(observation,action)
         
         done = self._EpisodeStopCondition(observation=observation)
         

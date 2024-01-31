@@ -6,22 +6,15 @@ class FlightEnvTargetAltitude(FlightEnv):
     def __init__(self, render_mode=None):
         super().__init__(render_mode=render_mode)
 
-    def _get_reward(self, observation):
+    def _get_reward(self, observation,action):
 
         # define difference to target altitude
-        overallSize = self.memory_size*6
         difference_to_target = abs(observation[-1] - self.target_altitude)
-        difference_to_target_last10 = abs(observation[overallSize-(6*(self.memory_size-1)-1)] - self.target_altitude)
+        
+        alpha = 1
+        beta = 1
+        self.reward = -alpha * difference_to_target - beta * np.linalg.norm(action)
 
-        if difference_to_target_last10-difference_to_target > 0:
-            self.reward += 1
-        else:
-            self.reward -= 10
-
-        if difference_to_target < 10:
-            self.reward += 100
-
-        self.reward -= 1.005**(self.current_step) #! might be good to exclude
 
     def _get_target(self, atarget=None):
         target = np.random.uniform(200, 400)
@@ -34,11 +27,11 @@ class FlightEnvTargetAltitude(FlightEnv):
     
     #done condition is depreceated only use terminate and trunctuated
     def _EpisodeStopCondition(self, observation):
-        if observation[-1] <= 0 or observation[-1] >= 600: # crashed into ground, or too much altitude #! use trunctuated
+        if observation[-1] <= 0 or observation[-1] >= 1000: # crashed into ground, or too much altitude #! use trunctuated
             done = True
         elif self.reward >= 1000: # successful episode with reward > 200 was able to keep altitude
             done = True
-        elif self.current_step >= 1000: #! normaly regulated with max time steps in epoch
+        elif self.current_step >= 10000: #! normaly regulated with max time steps in epoch
             done = True
         else:
             done = False

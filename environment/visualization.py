@@ -10,9 +10,9 @@ from typing import Deque
 class PlotVisualizer():
     def __init__(self, target_altitude):
         self.target_altitude = target_altitude
-        self._init_plot()
-        self.fig.canvas.draw()
-        plt.show(block=False)
+        # self._init_plot()
+        # self.fig.canvas.draw()
+        # plt.show(block=False)
 
     def reset_plot(self):
         self.t = np.zeros(1)
@@ -46,15 +46,35 @@ class PlotVisualizer():
         @param dt: float representing the time step [s] of the system
         '''
         self.target_altitude = target_altitude
+        self.fig, self.axs = plt.subplots(4, 2)
+        # self.reset_plot()
+        ylabels = ['alpha', 'q', 'V', 'Theta', 'x-Pos.', 'z-Pos.', 'elevator', 'throttle']
+        for i, ax in enumerate(self.axs.flat):
+            ax.set(ylabel=ylabels[i])
+            ax.grid(True)
+        self.axs[3, 0].set(xlabel='t')
+        self.axs[3, 1].set(xlabel='t')
+        plt.tight_layout()
+        # self._plot()
+        # self._init_plot()
+        
+        
         self.t = [n*dt for n in range(len(episode_data))]
         self.plot_data = np.array(episode_data)
-        self._plot()
+        for i in range(4):
+            for j in range(2):
+                # self.axs[i, j].cla()
+                self.axs[i, j].plot(self.t, self.plot_data[:,i*2+j])
+                if (i==2) & (j==1):
+                    self.axs[i, j].axhline(y=self.target_altitude, linestyle='--')
+        plt.show()
+        
        
         #self.fig.gca().relim()
         #self.fig.gca().autoscale_view()
         #self.fig.canvas.draw()
         #self.fig.canvas.flush_events()
-        plt.pause(0.000001)
+        # plt.pause(0.000001)
 
     def close(self):
         plt.close()
