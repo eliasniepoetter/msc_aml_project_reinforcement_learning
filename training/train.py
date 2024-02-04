@@ -34,6 +34,7 @@ callback = EvalCallback(env, callback_after_eval=callback_stop,
 
 # to use tensorboard log open terminal and run: tensorboard --logdir ./results/ppo_tensorboard/<subdirectory generated>
 # TODO: add criteria to stop when 100 epoch has been successfull
+<<<<<<< HEAD
 model = PPO('MlpPolicy', env, verbose=1, tensorboard_log="./results/ppo_tensorboard/").learn(total_timesteps=10000, progress_bar=True, callback=callback)
 
 
@@ -49,6 +50,9 @@ episode_length = env.get_episode_lengths()
 
 episode_reward_list, episode_length_list = evaluate_policy(model, env, n_eval_episodes=1, render=True, deterministic=True, return_episode_rewards=True, warn=True)
 
+=======
+model = PPO('MlpPolicy', env, verbose=1, tensorboard_log="./results/ppo_tensorboard/").learn(total_timesteps=1000, progress_bar=True)
+>>>>>>> refs/remotes/origin/main
 
 #this is for testing purposes
 for i in range(5):

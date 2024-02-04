@@ -6,12 +6,12 @@ class FlightEnvTargetAltitude(FlightEnv):
     def __init__(self, render_mode=None):
         super().__init__(render_mode=render_mode)
 
-    def _get_reward(self, observation,action):
+    def _get_reward(self, observation, action):
 
         self.reward = 0
 
         # define difference to target altitude
-        difference_to_target = abs(observation[-1] - self.target_altitude)
+        difference_to_target = abs(observation[-2] - self.target_altitude)
         difference_to_target_span = abs(observation[5] - self.target_altitude)
         
         # reward function parameters
@@ -30,9 +30,9 @@ class FlightEnvTargetAltitude(FlightEnv):
         self.reward = -alpha * difference_to_target - beta * np.linalg.norm(action) + survival_reward + directional_reward
 
         # hard punishment for attempting to simulate the Boeing 737 Max altitude controller (MKAS)
-        if observation[-1] <= 00:
+        if observation[-2] <= 00:
             self.reward = -1e6
-        elif observation[-1] >= 1000:
+        elif observation[-2] >= 1000:
             self.reward = -1e6
 
     def _get_target(self, atarget=None):
@@ -40,13 +40,13 @@ class FlightEnvTargetAltitude(FlightEnv):
         return target
     
     def _get_initialstate(self, a_state=None):
-        state = np.array([0, 0, 0, 0, 0, np.random.uniform(200, 400)])
+        state = np.array([0, 0, 0, 0, 0, np.random.uniform(200, 400), self.target_altitude])
         initial_reward = 0
         return state, initial_reward
     
     #done condition is depreceated only use terminate and trunctuated
     def _EpisodeStopCondition(self, observation):
-        if observation[-1] <= 0 or observation[-1] >= 1000: # crashed into ground, or too much altitude #! use trunctuated
+        if observation[-2] <= 0 or observation[-2] >= 1000: # crashed into ground, or too much altitude #! use trunctuated
             done = True
         elif self.current_step >= 10000: #! normaly regulated with max time steps in epoch
             done = True
