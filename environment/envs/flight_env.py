@@ -95,7 +95,8 @@ class FlightEnv(Env,ABC):
         observation = np.concatenate(self.state_memory, axis=-1)
 
         self.current_step += 1
-        self._get_reward(observation,action)
+        #self._get_reward(observation,action)
+        self._get_simple_reward(observation,action)
         
         done = self._EpisodeStopCondition(observation=observation)
         
