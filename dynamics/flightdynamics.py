@@ -51,39 +51,35 @@ class Flightdynamics:
     
 
 
-    def __init__(self, initial_state: np.ndarray):
-        '''
-        Class describing the flight dynamics of the aircraft
-        @param initial_state: np.ndarray of shape (6,) representing the initial state [alpha [rad], q [rad/s], V [m/s], Theta [rad], x [m], z [m]] of the system
-        '''
-        
-        self.state = initial_state
-        if initial_state.shape != (6,):
-            raise ValueError('Initial state must be of shape (6,): state = [alpha [rad], q [rad/s], V [m/s], Theta [rad], x [m], z [m]], but is of shape ' + str(initial_state.shape))
+    def __init__(self):
+        pass
 
-    def integrate(self, u, dt):
+    def integrate(self, state, u, dt):
         '''
         Returns the new state after integration
         @return: new state
         '''
-        xdot = self.A @ self.state + self.B @ u
+        xdot = self.A @ state + self.B @ u
         # Euler-Cauchy Integration (ODE1)
-        newState = self.state + dt * xdot
+        newState = state + dt * xdot
         return newState
 
-    def timestep(self, input: np.ndarray, dt: float) -> np.ndarray:
+    def timestep(self, current_state: np.ndarray, input: np.ndarray, dt: float) -> np.ndarray:
         '''
         Takes in an input and a timestep and returns the new state of the system
+        @param current_state: np.ndarray of shape (7,) representing the current state [alpha [rad], q [rad/s], V [m/s], Theta [rad], x [m], z [m], target_altitude [m]] of the system
         @param input: np.ndarray of shape (2,) with [elevator [rad], throttle [N]] as input
         @param dt: float representing the timestep
-        @return: np.ndarray of shape (6,) representing the new state [alpha [rad], q [rad/s], V [m/s], Theta [rad], x [m], z [m]] of the system
+        @return: np.ndarray of shape (7,) representing the new state [alpha [rad], q [rad/s], V [m/s], Theta [rad], x [m], z [m], target_altitude [m]] of the system
         '''
         # get new state without x,z position
-        self.state = self.integrate(input, dt)
+        state = current_state
+        state[0:-1] = self.integrate(current_state[0:-1], input, dt)
         # calculate x,z position
-        V0 = 51.4 # ToDo: handle V0
-        gamma = self.state[3] - self.state[0]
-        self.state[4] = self.state[4] + (self.state[2]+V0) * np.cos(gamma) * dt
-        self.state[5] = self.state[5] + (self.state[2]+V0) * np.sin(gamma) * dt
+        V0 = 51.4
+        gamma = state[3] - state[0]
+        state[4] = current_state[4] + (state[2]+V0) * np.cos(gamma) * dt
+        state[5] = current_state[5] + (state[2]+V0) * np.sin(gamma) * dt
+        state[6] = current_state[6]
         # return new state
-        return self.state
+        return state
