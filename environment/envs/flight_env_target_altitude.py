@@ -14,20 +14,35 @@ class FlightEnvTargetAltitude(FlightEnv):
         difference_to_target = abs(observation[-2] - self.target_altitude)
         difference_to_target_span = abs(observation[5] - self.target_altitude)
         
+        V0 = 51.4
+
         # reward function parameters
-        alpha = 0.001
-        beta = 0.01
-        survival_factor = 0.5
+        alpha = 0.01
+        beta = 0.001
+        survival_factor = 0.05
 
         survival_reward = self.current_step * survival_factor
+
+        v_current = observation[-5]
+        
+        if abs(v_current) < 0.9*V0 or abs(v_current) > 1.1*V0:
+            velocity_reward = -10
+        else:
+            velocity_reward = 0
+
 
         if difference_to_target_span > difference_to_target:
             directional_reward = 1
         else:
             directional_reward = -10
 
+        if difference_to_target < 10:
+            bonus = 100
+        else:
+            bonus = 0
+
         # simple reward function
-        self.reward = -alpha * difference_to_target - beta * np.linalg.norm(action) + survival_reward + directional_reward
+        self.reward = -alpha * difference_to_target - beta * np.linalg.norm(action) + survival_reward + directional_reward + velocity_reward + bonus
 
         # hard punishment for attempting to simulate the Boeing 737 Max altitude controller (MKAS)
         if observation[-2] <= 00:

@@ -27,14 +27,14 @@ env = Monitor(env, filename='./results/monitor', allow_early_resets=True)
 # reset at the before start of training
 env.reset()
 
-callback_stop = StopTrainingOnRewardThreshold(reward_threshold=100) #currently not used
+callback_stop = StopTrainingOnRewardThreshold(reward_threshold=2e7) #currently not used
 callback = EvalCallback(env, callback_after_eval=callback_stop, 
                         best_model_save_path='./results/eval/models/', log_path='./results/eval/logs/',
-                          eval_freq=5000, deterministic=True, render=True, n_eval_episodes=10, verbose=1)
+                          eval_freq=100000, deterministic=True, render=True, n_eval_episodes=10, verbose=1)
 
 # to use tensorboard log open terminal and run: tensorboard --logdir ./results/ppo_tensorboard/<subdirectory generated>
 # TODO: add criteria to stop when 100 epoch has been successfull
-model = PPO('MlpPolicy', env, verbose=1, tensorboard_log="./results/ppo_tensorboard/").learn(total_timesteps=10000, progress_bar=True, callback=callback)
+model = PPO('MlpPolicy', env, verbose=1, ent_coef=0.02, batch_size=1024, tensorboard_log="./results/ppo_tensorboard/").learn(total_timesteps=100000000, progress_bar=True, callback=callback)
 
 
 rewards_list = env.get_episode_rewards()

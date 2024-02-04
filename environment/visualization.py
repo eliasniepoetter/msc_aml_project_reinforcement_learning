@@ -58,6 +58,7 @@ class PlotVisualizer():
         
         self.t = [n*dt for n in range(len(episode_data))]
         self.plot_data = np.delete(np.array(episode_data), 6, 1) # delete target altitude from plotting data
+        self.plot_data[:,2] += 51.4 # add V0 to velocity
         for i in range(4):
             for j in range(2):
                 # self.axs[i, j].cla()

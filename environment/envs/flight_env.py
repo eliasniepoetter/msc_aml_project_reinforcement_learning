@@ -22,7 +22,7 @@ class FlightEnv(Env,ABC):
         self.state_memory = deque(maxlen=self.memory_size)
 
         # action space [elevator, throttle]
-        self.action_space = Box(low=np.array([-0.1, 0]), high=np.array([0.1, 0.4]), shape=(2,), dtype=np.float64)
+        self.action_space = Box(low=np.array([-0.1, -0.5]), high=np.array([0.1, 0.5]), shape=(2,), dtype=np.float64)
         
         # Initial condition and state
         self.target_altitude = self._get_target()
@@ -67,9 +67,13 @@ class FlightEnv(Env,ABC):
     def step(self, action):
         # observation = self.dynamics.timestep(input=action, dt=self.dt)
 
+        # initial actions for first step
+        if self.current_step == 0:
+            action = np.array([0, 0])
+
         # action rate limiter
         self.rateLimitElevator = 0.1 # rad/s
-        self.rateLimitThrottle = 0.1 # 1/s
+        self.rateLimitThrottle = 1 # 1/s
         if self.current_step > 0:
             if abs(action[0] - self.obs_act_collection[-1][-2]) > self.rateLimitElevator*self.dt:
                 sign = np.sign(action[0] - self.obs_act_collection[-1][-2])
