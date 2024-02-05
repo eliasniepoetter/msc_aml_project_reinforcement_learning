@@ -81,5 +81,6 @@ class FlightEnvTargetAltitude(FlightEnv):
             done = True
         else:
             done = False
-        
-        return done
+
+        truncated = False
+        return done, truncated

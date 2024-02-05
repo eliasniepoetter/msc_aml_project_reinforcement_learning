@@ -69,6 +69,8 @@ class FlightEnv(Env,ABC):
         return self.observation, info
     
     def step(self, action):
+        self.current_step += 1
+
         # action rate limiter and initial action
         # ToDo: adapt rate limit
         self.rateLimitElevator = 0.1 # rad/s
@@ -87,36 +89,21 @@ class FlightEnv(Env,ABC):
 
         # get new observation
         state, self.observation = self.dynamics.timestep(observation=self.observation, input=action, dt=self.dt)
+        self.observation[4] = self.observation[3] - self.target_altitude    # update difference to target altitude
 
         # save observation and action in collection
-        self.obs_act_collection.append(np.concatenate((obs, action)))
+        self.obs_act_collection.append(np.concatenate((state, self.observation, action)))
 
-        # Add the current observation to the state memory
-        self.state_memory.append(obs)
-
-        # Concatenate the state memory to form the agent's current state
-        # newest observation is last vector in concatenated observation!
-        observation = np.concatenate(self.state_memory, axis=-1)
-
-        self.current_step += 1
-        #self._get_reward(observation,action)
-        self._get_simple_reward(observation,action)
+        # get step reward
+        self._get_reward(self.observation, action)
         
-        done = self._EpisodeStopCondition(observation=observation)
-        
-        #test purposes
-        # if done == True:
-            # print(self.current_step)
-            # print(self.reward)
-            # print(observation)
-            # print(self.target_altitude)
-
-        truncated = False
-
-        # ToDo: implement info, can be empty
+        # check if episode is done
+        done, truncated = self._EpisodeStopCondition(observation=self.observation)
+       
+        # info
         info = {}
 
-        return observation, self.reward, done, truncated, info
+        return self.observation, self.reward, done, truncated, info
 
     def render(self):
         #if self.render_mode == 'human':

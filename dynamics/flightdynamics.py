@@ -54,29 +54,21 @@ class Flightdynamics:
         self.state = np.array([0., 0., 0., 0.])
         
     def integrate(self, u, dt):
-        '''
-        Returns the new state after integration
-        @return: new state
-        '''
         xdot = self.A @ self.state + self.B @ u
         # Euler-Cauchy Integration (ODE1)
         self.state += dt * xdot
 
-    def timestep(self, observation: np.ndarray, input: np.ndarray, dt: float) -> np.ndarray:
-        '''
-        Takes in an input and a timestep and returns the new state of the system
-        @param current_state: np.ndarray of shape (7,) representing the current state [alpha [rad], q [rad/s], V [m/s], Theta [rad], x [m], z [m], target_altitude [m]] of the system
-        @param input: np.ndarray of shape (2,) with [elevator [rad], throttle [N]] as input
-        @param dt: float representing the timestep
-        @return: np.ndarray of shape (7,) representing the new state [alpha [rad], q [rad/s], V [m/s], Theta [rad], x [m], z [m], target_altitude [m]] of the system
-        '''
-        # get new state without x,z position
-        old_state = self.state
+    def timestep(self, observation: np.ndarray, input: np.ndarray, dt: float):
+        # store old state and integrate state
+        old_state = np.copy(self.state)
         self.integrate(input, dt)
-        # calculate x,z position
-        gamma = state[3] - state[0]
-        state[4] = current_state[4] + (state[2]+self.V0) * np.cos(gamma) * dt
-        state[5] = current_state[5] + (state[2]+self.V0) * np.sin(gamma) * dt
-        state[6] = current_state[6]
+
+        # calculate observation
+        gamma = self.state[3] - self.state[0]
+        observation[0] = (self.state[2]+self.V0) * np.cos(gamma)    # v_x
+        observation[1] = (self.state[2]+self.V0) * np.sin(gamma)    # v_y
+        observation[2] = observation[2] + (self.state[2]+self.V0) * np.cos(gamma) * dt   # x_pos
+        observation[3] = observation[3] + (self.state[2]+self.V0) * np.sin(gamma) * dt   # z_pos
+
         # return new state
         return self.state, observation
