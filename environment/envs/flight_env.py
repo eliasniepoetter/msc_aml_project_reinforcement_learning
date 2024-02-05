@@ -11,69 +11,69 @@ class FlightEnv(Env,ABC):
     #metadata = {'render_modes': ['human'], 'render_fps': 30}
 
     def __init__(self, render_mode=None):
-        # Define observation and action space
-        # observation space [alpha, q, velocity, Theta, pos_x, pos_z, target_altitude]
-        self.memory_size = 10
-        state_lower_bound = np.array([-0.2, -0.2, -30, -1.0, 0, 0, 0])
-        state_upper_bound = np.array([0.2, 0.2, 30, 1.0, np.inf, np.inf, np.inf])
-        self.observation_space = Box(low=np.repeat(state_lower_bound, self.memory_size), high=np.repeat(state_upper_bound, self.memory_size), shape=(7*self.memory_size,), dtype=np.float64)
-        
-        # Initialize the deque to store state history
-        self.state_memory = deque(maxlen=self.memory_size)
+        # observation and action space definition
+        # ToDo: add state memory if needed
+        # observation space             [v_x,   v_y,    x,      z,      dz      ]
+        state_lower_bound = np.array(   [-50,   -50,    0,      0,      0       ])
+        state_upper_bound = np.array(   [50,    50,     np.inf, np.inf, np.inf  ])
+        self.observation_space = Box(low=state_lower_bound, high=state_upper_bound, shape=(len(state_lower_bound),), dtype=np.float64)
 
-        # action space [elevator, throttle]
-        self.action_space = Box(low=np.array([-0.1, -0.5]), high=np.array([0.1, 0.5]), shape=(2,), dtype=np.float64)
+         # action space                 [elevator,  throttle]
+        action_lower_bound = np.array(  [-0.1,      -0.5    ])
+        action_upper_bound = np.array(  [0.1,       0.5     ])                            
+        self.action_space = Box(low=action_lower_bound, high=action_upper_bound, shape=(len(action_lower_bound),), dtype=np.float64)
         
-        # Initial condition and state
+        # initial condition and state
         self.target_altitude = self._get_target()
-        self.initial_state, self.reward  = self._get_initialstate()
-        # Add the initial state to the state memory
-        self.state_memory.extend([self.initial_state] * self.memory_size)
+        self.observation, self.reward  = self._get_initialstate()
+
+        # initialize dynamics
+        # Todo: define timestep
+        self.dt = 0.05 
         self.dynamics = Flightdynamics()
-        self.current_step = 0
-        self.dt = 0.05 # ToDo: define timestep
+        
+        # initialize memory
         self.obs_act_collection = deque()
         
-        # rendering
+        # initialize progress tracking
+        self.current_step = 0
+        self.success_count = 0
+
+        # initialize rendering
+        # ToDO: implement rendering
         #assert render_mode is None or render_mode in self.metadata["render_modes"]
         #self.render_mode = render_mode
         self.vis = PlotVisualizer(self.target_altitude) 
-
-        #counter for success
-        self.success_count = 0
-
+    
     def reset(self, seed=None, options=None): 
         super().reset(seed=seed, options=options)
+
+        # reset progress tracking
         self.current_step = 0
-        self.vis.reset_plot()
+        self.success_count = 0       
 
         # Reset the environment and clear the state memory
-        self.state_memory.clear()
-
-        self.target_altitude = self._get_target() 
-        # set state of dynamics to initial state and with new random altitude convert to observation
-        self.initial_state, self.reward = self._get_initialstate()
         self.obs_act_collection.clear()
 
-        # Add the initial state to the state memory
-        self.state_memory.extend([self.initial_state] * self.memory_size)
+        # get new target altitude and initialize state
+        self.target_altitude = self._get_target()
+        self.observation, self.reward = self._get_initialstate()
+        self.dynamics.reset()
 
-        observation = np.concatenate(self.state_memory, axis=-1)
+        # reset visualization
+        self.vis.reset_plot()
 
+        # ToDo: implement info, can be empty
         info = {}
 
-        return observation, info
+        return self.observation, info
     
     def step(self, action):
-        # observation = self.dynamics.timestep(input=action, dt=self.dt)
-
-        # initial actions for first step
-        if self.current_step == 0:
-            action = np.array([0, 0])
-
-        # action rate limiter
+        # action rate limiter and initial action
+        # ToDo: adapt rate limit
         self.rateLimitElevator = 0.1 # rad/s
         self.rateLimitThrottle = 1 # 1/s
+
         if self.current_step > 0:
             if abs(action[0] - self.obs_act_collection[-1][-2]) > self.rateLimitElevator*self.dt:
                 sign = np.sign(action[0] - self.obs_act_collection[-1][-2])
@@ -82,8 +82,12 @@ class FlightEnv(Env,ABC):
             if abs(action[1] - self.obs_act_collection[-1][-1]) > self.rateLimitThrottle*self.dt:
                 sign = np.sign(action[1] - self.obs_act_collection[-1][-1])
                 action[1] = self.obs_act_collection[-1][-1] + sign*self.rateLimitThrottle*self.dt
+        elif self.current_step == 0:
+            action = np.array([0, 0])
 
-        obs = self.dynamics.timestep(current_state=self.state_memory[-1], input=action, dt=self.dt)
+        # get new observation
+        state, self.observation = self.dynamics.timestep(observation=self.observation, input=action, dt=self.dt)
+
         # save observation and action in collection
         self.obs_act_collection.append(np.concatenate((obs, action)))
 

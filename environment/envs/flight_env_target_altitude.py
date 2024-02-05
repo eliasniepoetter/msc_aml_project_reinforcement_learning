@@ -68,9 +68,10 @@ class FlightEnvTargetAltitude(FlightEnv):
         return target
     
     def _get_initialstate(self, a_state=None):
-        state = np.array([0, 0, 0, 0, 0, np.random.uniform(200, 400), self.target_altitude])
+        z_initial = np.random.uniform(200, 400)
+        initial_state = np.array([0, 0, 0, z_initial, z_initial-self.target_altitude])
         initial_reward = 0
-        return state, initial_reward
+        return initial_state, initial_reward
     
     #done condition is depreceated only use terminate and trunctuated
     def _EpisodeStopCondition(self, observation):
