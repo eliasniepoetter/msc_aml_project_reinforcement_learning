@@ -15,14 +15,14 @@ class FlightEnvTargetAltitude(FlightEnv):
         dz = observation[-1]
 
         # reward function parameters
-        k_altitude = 0.01           # altitude reward factor
+        k_altitude = 1/200          # altitude reward factor
         k_survival = 0              # survival reward factor, included in altitude reward
-        k_direction = 0             # direction reward factor
-        k_actuator_effort = 0.001   # actuator effort reward factor
+        k_direction = 0.1           # direction reward factor
+        k_actuator_effort = 0.1     # actuator effort reward factor
 
-        altitude_reward = np.exp(-abs(dz) * k_altitude)
+        altitude_reward = 1 -abs(dz) * k_altitude
         survival_reward = self.current_step * k_survival
-        actuator_effort_reward = -k_actuator_effort * np.linalg.norm(action)
+        actuator_effort_reward = -k_actuator_effort * (np.sum(action**2))**0.5
         if -v_z*dz >= 0:
             direction_reward = k_direction
         else:

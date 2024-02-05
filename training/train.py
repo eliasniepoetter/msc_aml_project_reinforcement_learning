@@ -22,7 +22,7 @@ class PPOTraining():
         # self.env = VecNormalize(env)
         self.model = None
 
-    def train(self):
+    def train(self, total_timesteps=1000000):
         # wrapper for environment for callback and monitoring
         self.env = Monitor(self.env, filename='./results/monitor', allow_early_resets=True)
 
@@ -36,7 +36,7 @@ class PPOTraining():
 
         # to use tensorboard log open terminal and run: tensorboard --logdir ./results/ppo_tensorboard/<subdirectory generated>
         # TODO: add criteria to stop when 100 epoch has been successfull
-        self.model = PPO('MlpPolicy', self.env, verbose=1, ent_coef=0.02, batch_size=1024, tensorboard_log="./results/ppo_tensorboard/").learn(total_timesteps=100000, progress_bar=True, callback=callback)
+        self.model = PPO('MlpPolicy', self.env, verbose=1, ent_coef=0.02, batch_size=1024, tensorboard_log="./results/ppo_tensorboard/").learn(total_timesteps=total_timesteps, progress_bar=True, callback=callback)
 
 
         rewards_list = self.env.get_episode_rewards()
