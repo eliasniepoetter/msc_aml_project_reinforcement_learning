@@ -51,8 +51,8 @@ class Flightdynamics:
         self.reset()
 
     def reset(self):
-        self.state = np.array([0., 0., 0., 0.])
-        
+        self.state = np.array([self.V0, 0., 0., 0.])
+ 
     def integrate(self, u, dt):
         xdot = self.A @ self.state + self.B @ u
         # Euler-Cauchy Integration (ODE1)

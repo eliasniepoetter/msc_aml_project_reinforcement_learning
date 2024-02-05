@@ -9,9 +9,11 @@ from stable_baselines3.common.evaluation import evaluate_policy
 import gymnasium as gym
 from custom_callback.successCallback import SuccessCallback
 from stable_baselines3.common.callbacks import BaseCallback ,EvalCallback, StopTrainingOnRewardThreshold, CheckpointCallback
-from stable_baselines3.common.vec_env import VecNormalize
-import time
+from stable_baselines3.common.vec_env import VecNormalize, DummyVecEnv, SubprocVecEnv
+from stable_baselines3.common.env_util import make_vec_env
+import os
 
+N_ENVS = os.cpu_count()
 
 class PPOTraining():
     def __init__(self):
@@ -21,7 +23,7 @@ class PPOTraining():
         self.env = FlightEnvTargetAltitude()
         # self.env = VecNormalize(env)
         self.model = None
-
+    
     def train(self, total_timesteps=1000000):
         # wrapper for environment for callback and monitoring
         self.env = Monitor(self.env, filename='./results/monitor', allow_early_resets=True)
