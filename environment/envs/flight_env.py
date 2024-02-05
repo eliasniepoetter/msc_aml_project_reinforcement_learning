@@ -19,14 +19,10 @@ class FlightEnv(Env,ABC):
         self.observation_space = Box(low=state_lower_bound, high=state_upper_bound, shape=(len(state_lower_bound),), dtype=np.float64)
 
          # action space                 [elevator,  throttle]
-        action_lower_bound = np.array(  [-0.1,      -0.5    ])
-        action_upper_bound = np.array(  [0.1,       0.5     ])                            
+        action_lower_bound = np.array(  [-0.1,      -0.3    ])
+        action_upper_bound = np.array(  [0.1,       0.3     ])                            
         self.action_space = Box(low=action_lower_bound, high=action_upper_bound, shape=(len(action_lower_bound),), dtype=np.float64)
         
-        # initial condition and state
-        self.target_altitude = self._get_target()
-        self.observation, self.reward  = self._get_initialstate()
-
         # initialize dynamics
         # Todo: define timestep
         self.dt = 0.05 
@@ -34,16 +30,15 @@ class FlightEnv(Env,ABC):
         
         # initialize memory
         self.obs_act_collection = deque()
-        
-        # initialize progress tracking
-        self.current_step = 0
-        self.success_count = 0
 
         # initialize rendering
         # ToDO: implement rendering
         #assert render_mode is None or render_mode in self.metadata["render_modes"]
         #self.render_mode = render_mode
-        self.vis = PlotVisualizer(self.target_altitude) 
+        self.vis = PlotVisualizer()
+
+        # initial condition and state
+        _,_ = self.reset()
     
     def reset(self, seed=None, options=None): 
         super().reset(seed=seed, options=options)
@@ -57,12 +52,11 @@ class FlightEnv(Env,ABC):
 
         # get new target altitude and initialize state
         self.target_altitude = self._get_target()
-        self.observation, self.reward = self._get_initialstate()
+        self.observation, self.reward = self._get_initial_observation()
+        self.initial_action = np.array([0, 0])
         self.dynamics.reset()
-
-        # reset visualization
-        self.vis.reset_plot()
-
+        self.obs_act_collection.append(np.concatenate((self.dynamics.state, self.observation, self.initial_action)))
+        
         # ToDo: implement info, can be empty
         info = {}
 
@@ -74,7 +68,7 @@ class FlightEnv(Env,ABC):
         # action rate limiter and initial action
         # ToDo: adapt rate limit
         self.rateLimitElevator = 0.1 # rad/s
-        self.rateLimitThrottle = 1 # 1/s
+        self.rateLimitThrottle = 0.1 # 1/s
 
         if self.current_step > 0:
             if abs(action[0] - self.obs_act_collection[-1][-2]) > self.rateLimitElevator*self.dt:
@@ -85,7 +79,7 @@ class FlightEnv(Env,ABC):
                 sign = np.sign(action[1] - self.obs_act_collection[-1][-1])
                 action[1] = self.obs_act_collection[-1][-1] + sign*self.rateLimitThrottle*self.dt
         elif self.current_step == 0:
-            action = np.array([0, 0])
+            action = self.initial_action
 
         # get new observation
         state, self.observation = self.dynamics.timestep(observation=self.observation, input=action, dt=self.dt)
@@ -108,7 +102,7 @@ class FlightEnv(Env,ABC):
     def render(self):
         #if self.render_mode == 'human':
             #pass
-        self.vis.render_state(self.obs_act_collection, self.dt, self.target_altitude)
+        self.vis.visualize_episode(self.obs_act_collection, self.dt, self.target_altitude)
 
     def close(self):
         self.vis.close()
@@ -119,7 +113,7 @@ class FlightEnv(Env,ABC):
     
     @abstractmethod
     # returns initial state of aircraft
-    def _get_initialstate(self, a_state=None):
+    def _get_initial_observation(self, a_state=None):
         raise NotImplementedError
     
     @abstractmethod
