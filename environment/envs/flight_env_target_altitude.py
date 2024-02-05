@@ -60,8 +60,9 @@ class FlightEnvTargetAltitude(FlightEnv):
         alpha = 0.01
 
         # exponential reward function
-        self.reward = np.exp(-difference_to_target * alpha)
-
+        #self.reward = np.exp(-difference_to_target * alpha)
+        self.reward = 1 - alpha*difference_to_target
+        
     def _get_target(self, atarget=None):
         target = np.random.uniform(200, 400)
         return target
