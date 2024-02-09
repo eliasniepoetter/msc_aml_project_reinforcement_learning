@@ -1,5 +1,5 @@
-from training import train
-# from training import evaluation
+# from training import train
+from training import evaluation
 
-train
-# evaluation
+# train
+evaluation
