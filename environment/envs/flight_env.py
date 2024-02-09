@@ -117,7 +117,8 @@ class FlightEnv(Env,ABC):
     def render(self):
         #if self.render_mode == 'human':
             #pass
-        self.vis.render_state(self.obs_act_collection, self.dt, self.target_altitude)
+        #self.vis.render_state(self.obs_act_collection, self.dt, self.target_altitude)
+        self.vis.visualize_episode(self.obs_act_collection, self.dt, self.target_altitude)
 
     def close(self):
         self.vis.close()
