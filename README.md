@@ -16,3 +16,8 @@ The goal is to design a flight controller through reinforcement leanring methods
 - load a specified model from the project folder
 - evaluate that model
 
+## accessing tensorboard
+- enter the following command into your terminal
+- tensorboard --logdir ./results/ppo_tensorboard/PPO_xx
+- replace xx with corresponding training number of the PPO model
+
