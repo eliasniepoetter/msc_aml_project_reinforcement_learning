@@ -50,6 +50,19 @@ class FlightEnvTargetAltitude(FlightEnv):
         elif observation[-2] >= 1000:
             self.reward = -1e6
 
+    def _get_simple_reward(self, observation, action):
+        self.reward = 0
+        
+        # define difference to target altitude
+        difference_to_target = abs(observation[-2] - self.target_altitude)
+        
+        # params  
+        alpha = 0.01
+
+        # exponential reward function
+        #self.reward = np.exp(-difference_to_target * alpha)
+        self.reward = 1 - alpha*difference_to_target
+        
     def _get_target(self, atarget=None):
         target = np.random.uniform(200, 400)
         return target
