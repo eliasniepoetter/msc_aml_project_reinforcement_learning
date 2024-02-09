@@ -1,5 +1,7 @@
-# from training import train
-from training import evaluation
+# uncomment to train the model
+from training import train
+train
 
-# train
-evaluation
+# uncomment to evaluate the model
+# from training import evaluation
+# evaluation

@@ -13,8 +13,6 @@ class FlightEnvTargetAltitude(FlightEnv):
         # define difference to target altitude
         difference_to_target = abs(observation[-2] - self.target_altitude)
         difference_to_target_span = abs(observation[5] - self.target_altitude)
-        
-        V0 = 51.4
 
         # reward function parameters
         alpha = 0.01
@@ -25,7 +23,7 @@ class FlightEnvTargetAltitude(FlightEnv):
 
         v_current = observation[-5]
         
-        if abs(v_current) < 0.9*V0 or abs(v_current) > 1.1*V0:
+        if abs(v_current) < 0.9*self.dynamics.V0 or abs(v_current) > 1.1*self.dynamics.V0:
             velocity_reward = -10
         else:
             velocity_reward = 0
@@ -41,7 +39,7 @@ class FlightEnvTargetAltitude(FlightEnv):
         else:
             bonus = 0
 
-        # simple reward function
+        # reward function
         self.reward = -alpha * difference_to_target - beta * np.linalg.norm(action) + survival_reward + directional_reward + velocity_reward + bonus
 
         # hard punishment for attempting to simulate the Boeing 737 Max altitude controller (MKAS)
@@ -49,19 +47,6 @@ class FlightEnvTargetAltitude(FlightEnv):
             self.reward = -1e6
         elif observation[-2] >= 1000:
             self.reward = -1e6
-
-    def _get_simple_reward(self, observation, action):
-        self.reward = 0
-        
-        # define difference to target altitude
-        difference_to_target = abs(observation[-2] - self.target_altitude)
-        
-        # params  
-        alpha = 0.01
-
-        # exponential reward function
-        #self.reward = np.exp(-difference_to_target * alpha)
-        self.reward = 1 - alpha*difference_to_target
         
     def _get_target(self, atarget=None):
         target = np.random.uniform(200, 400)
@@ -74,9 +59,9 @@ class FlightEnvTargetAltitude(FlightEnv):
     
     #done condition is depreceated only use terminate and trunctuated
     def _EpisodeStopCondition(self, observation):
-        if observation[-2] <= 0 or observation[-2] >= 1000: # crashed into ground, or too much altitude #! use trunctuated
+        if observation[-2] <= 0 or observation[-2] >= 1000: # crashed into ground, or too much altitude
             done = True
-        elif self.current_step >= 10000: #! normaly regulated with max time steps in epoch
+        elif self.current_step >= 10000:
             done = True
         else:
             done = False

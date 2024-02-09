@@ -49,37 +49,24 @@ class Flightdynamics:
             [0., 0.]
         ])
     
-
-
     def __init__(self):
-        pass
+        self.V0 = 51.4
 
     def integrate(self, state, u, dt):
-        '''
-        Returns the new state after integration
-        @return: new state
-        '''
         xdot = self.A @ state + self.B @ u
         # Euler-Cauchy Integration (ODE1)
         newState = state + dt * xdot
         return newState
 
     def timestep(self, current_state: np.ndarray, input: np.ndarray, dt: float) -> np.ndarray:
-        '''
-        Takes in an input and a timestep and returns the new state of the system
-        @param current_state: np.ndarray of shape (7,) representing the current state [alpha [rad], q [rad/s], V [m/s], Theta [rad], x [m], z [m], target_altitude [m]] of the system
-        @param input: np.ndarray of shape (2,) with [elevator [rad], throttle [N]] as input
-        @param dt: float representing the timestep
-        @return: np.ndarray of shape (7,) representing the new state [alpha [rad], q [rad/s], V [m/s], Theta [rad], x [m], z [m], target_altitude [m]] of the system
-        '''
         # get new state without x,z position
         state = current_state
         state[0:-1] = self.integrate(current_state[0:-1], input, dt)
         # calculate x,z position
-        V0 = 51.4
         gamma = state[3] - state[0]
-        state[4] = current_state[4] + (state[2]+V0) * np.cos(gamma) * dt
-        state[5] = current_state[5] + (state[2]+V0) * np.sin(gamma) * dt
+        state[4] = current_state[4] + (state[2]+self.V0) * np.cos(gamma) * dt
+        state[5] = current_state[5] + (state[2]+self.V0) * np.sin(gamma) * dt
         state[6] = current_state[6]
+
         # return new state
         return state
